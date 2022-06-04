@@ -16,7 +16,7 @@ class Repository():
 
 def create_parser ():
     parser = argparse.ArgumentParser()
-    parser.add_argument ('-s', '--source')
+    parser.add_argument('-s', '--source')
     parser.add_argument('-c', '--clone')
     parser.add_argument('-i', '--interval')
     parser.add_argument('-l', '--log')
@@ -26,13 +26,13 @@ def create_parser ():
 
 def input_validation(arg1, arg2, arg3, arg4):
     if not os.path.isdir(arg1):
-        pass
+        raise NotADirectoryError("{} folder does not exist!".format(arg1))
     elif not os.path.isdir(arg2):
-        pass
+        raise NotADirectoryError("{} folder does not exist!".format(arg2))
     elif not arg3.isdigit():
-        pass
-    elif not os.path.exists(arg4):
-        pass
+        raise TypeError("{} is not a digit!".format(arg3))
+    elif not os.path.isfile(arg4):
+        raise FileNotFoundError("{} file does not exist!".format(arg4))
 
 
 def file_to_hash_sha256(filename):
@@ -87,7 +87,8 @@ if __name__ == "__main__":
             if item1 == item2:
                 file_found = True
         if not file_found:
-            remove_file(item1)
+            pass
+            # remove_file(item1)
 
     for item1 in origin_files.items():
         file_found = False
@@ -95,7 +96,8 @@ if __name__ == "__main__":
             if item1 == item2:
                 file_found = True
         if not file_found:
-            copy_file(item1)
+            pass
+            # copy_file(item1)
             
 
 

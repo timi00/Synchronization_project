@@ -3,6 +3,7 @@ import os.path
 import logging
 import hashlib
 import argparse
+import shutil
 
 
 class DirectorySynchronizer:
@@ -11,11 +12,26 @@ class DirectorySynchronizer:
         self.source_dir = source_dir
         self.clone_dir = clone_dir
 
-    def copy_file(self):
-        pass
+    def create_dir(self, directory):
+        full_path = os.path.join(self.clone_dir, directory)
+        os.mkdir(full_path)
+        self.logger.info(f"Directory {full_path} was created")
 
-    def remove_file(self):
-        pass
+    def remove_dir(self, directory):
+        full_path = os.path.join(self.clone_dir, directory)
+        os.rmdir(full_path)
+        self.logger.info(f"Directory {full_path} was deleted")
+
+    def copy_file(self, file):
+        source_path = os.path.join(self.source_dir, file)
+        clone_path = os.path.join(self.clone_dir, file)
+        shutil.copy2(source_path, clone_path)
+        self.logger.info(f"File {file} was copied from {source_path}")
+
+    def remove_file(self, file):
+        full_path = os.path.join(self.clone_dir, file)
+        os.remove(full_path)
+        self.logger.info(f"File {full_path} was deleted")
 
     def file_to_hash_sha256(self, filename):
         sha256_hash = hashlib.sha256()
@@ -24,6 +40,15 @@ class DirectorySynchronizer:
             for byte_block in iter(lambda: f.read(4096), b""):
                 sha256_hash.update(byte_block)
         return sha256_hash.hexdigest()
+
+    def directories_to_tuple(self, directory):
+        directories = tuple()
+        for dirpath, dirnames, files in os.walk(directory):
+            for dirname in dirnames:
+                full_path = os.path.join(dirpath, dirname)
+                rel_path = (os.path.relpath(full_path, start=directory),)
+                directories += rel_path
+        return directories
 
     def files_to_dictionary(self, directory):
         file_dictionary = {}
@@ -35,12 +60,35 @@ class DirectorySynchronizer:
                 file_dictionary[rel_path] = file_hash
         return file_dictionary
 
+    def synchronize_directories(self, origin_dirs, clone_dirs):
+        for dir in clone_dirs:
+            dir_found = False
+            for origin_dir in origin_dirs:
+                if dir == origin_dir:
+                    dir_found = True
+            if not dir_found:
+                try:
+                    self.remove_dir(dir)
+                except Exception as e:
+                    self.logger.error(f"Unable to remove directory {dir}. {e}")
+
+        for origin_dir in origin_dirs:
+            dir_found = False
+            for dir in clone_dirs:
+                if dir == origin_dir:
+                    dir_found = True
+            if not dir_found:
+                try:
+                    self.create_dir(origin_dir)
+                except Exception as e:
+                    self.logger.error(f"Unable to create directory {origin_dir}. {e}")
+
     def synchronize_files(self, origin_files, clone_files):
         for filename, filehash in clone_files.items():
             orig_filehash = origin_files.get(filename)
             if filehash != orig_filehash:
                 try:
-                    self.remove_file()
+                    self.remove_file(filename)
                 except Exception as e:
                     self.logger.error(f"Unable to remove file {filename}. {e}")
 
@@ -48,10 +96,16 @@ class DirectorySynchronizer:
             clone_filehash = clone_files.get(filename)
             if filehash != clone_filehash:
                 try:
-                    self.copy_file()
+                    self.copy_file(filename)
                 except Exception as e:
                     self.logger.error(f"Unable to copy file {filename}. {e}")
 
     def run(self, interval):
+        origin_dirs = self.directories_to_tuple(self.source_dir)
+        clone_dirs = self.directories_to_tuple(self.clone_dir)
         origin_files = self.files_to_dictionary(self.source_dir)
         clone_files = self.files_to_dictionary(self.clone_dir)
+        self.synchronize_directories(origin_dirs, clone_dirs)
+        self.synchronize_files(origin_files, clone_files)
+        # # todo: waiting interval
+        # # self.run(self, interval)

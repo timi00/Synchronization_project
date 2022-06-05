@@ -1,7 +1,6 @@
 import sys
 import os.path
 import logging
-import hashlib
 import argparse
 from DirectorySynchronizer import DirectorySynchronizer
 
@@ -43,7 +42,7 @@ if __name__ == "__main__":
     namespace = parser.parse_args(sys.argv[1:])
     #todo: print entered arguments
 
-    input_validation(namespace.source,namespace.clone, namespace.interval, namespace.log)
+    input_validation(namespace.source, namespace.clone, namespace.interval, namespace.log)
 
     original_directory = namespace.source
     clone_directory = namespace.clone
@@ -51,8 +50,6 @@ if __name__ == "__main__":
     log_file = namespace.log
 
     logger = create_logger(log_file)
-    # logger.info("Our third Log Message")
-    # logger.error("Our error Log Message")
 
     sync = DirectorySynchronizer(logger, original_directory, clone_directory)
     sync.run(sync_interval)

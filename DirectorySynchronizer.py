@@ -115,8 +115,15 @@ class DirectorySynchronizer:
 
     def run(self, interval):
         while True:
+            if not os.path.isdir(self.source_dir):
+                self.logger.error(f"{self.source_dir} directory does not exist!")
+                break
             origin_dirs = self.directories_to_tuple(self.source_dir)
+
+            if not os.path.isdir(self.clone_dir):
+                shutil.copytree(self.source_dir, self.clone_dir)
             clone_dirs = self.directories_to_tuple(self.clone_dir)
+
             self.synchronize_directories(origin_dirs, clone_dirs)
 
             origin_files = self.files_to_dictionary(self.source_dir)

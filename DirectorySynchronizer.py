@@ -1,9 +1,7 @@
-import sys
-import os.path
-import logging
 import hashlib
-import argparse
+import os.path
 import shutil
+import time
 
 
 class DirectorySynchronizer:
@@ -101,11 +99,13 @@ class DirectorySynchronizer:
                     self.logger.error(f"Unable to copy file {filename}. {e}")
 
     def run(self, interval):
-        origin_dirs = self.directories_to_tuple(self.source_dir)
-        clone_dirs = self.directories_to_tuple(self.clone_dir)
-        origin_files = self.files_to_dictionary(self.source_dir)
-        clone_files = self.files_to_dictionary(self.clone_dir)
-        self.synchronize_directories(origin_dirs, clone_dirs)
-        self.synchronize_files(origin_files, clone_files)
-        # # todo: waiting interval
-        # # self.run(self, interval)
+        while True:
+            origin_dirs = self.directories_to_tuple(self.source_dir)
+            clone_dirs = self.directories_to_tuple(self.clone_dir)
+            origin_files = self.files_to_dictionary(self.source_dir)
+            clone_files = self.files_to_dictionary(self.clone_dir)
+            self.synchronize_directories(origin_dirs, clone_dirs)
+            self.synchronize_files(origin_files, clone_files)
+            self.logger.info(f"\nDirectory {self.clone_dir} is synchronized with {self.source_dir}")
+            # waiting for next iteration
+            time.sleep(interval)

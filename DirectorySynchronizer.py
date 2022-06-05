@@ -15,9 +15,16 @@ class DirectorySynchronizer:
         os.mkdir(full_path)
         self.logger.info(f"Directory {full_path} was created")
 
+    # another possible solution: instead of creating new directory, we can copy existing from source:
+    # def copy_dir(self, directory):
+    #     source_path = os.path.join(self.source_dir, directory)
+    #     clone_path = os.path.join(self.clone_dir, directory)
+    #     if not os.path.exists(clone_path):
+    #         shutil.copytree(source_path, clone_path)
+
     def remove_dir(self, directory):
         full_path = os.path.join(self.clone_dir, directory)
-        os.rmdir(full_path)
+        shutil.rmtree(full_path)
         self.logger.info(f"Directory {full_path} was deleted")
 
     def copy_file(self, file):
@@ -61,6 +68,8 @@ class DirectorySynchronizer:
         return file_dictionary
 
     def synchronize_directories(self, origin_dirs, clone_dirs):
+        # checks if directory from clone directory exists in source directory. If not, it removes the directory from
+        # clone directory
         for clone_dir in clone_dirs:
             dir_found = False
             for origin_dir in origin_dirs:
@@ -71,7 +80,8 @@ class DirectorySynchronizer:
                     self.remove_dir(clone_dir)
                 except Exception as e:
                     self.logger.error(f"Unable to remove directory {clone_dir}. {e}")
-
+        # checks if directory from source directory exists in clone directory. If not, it creates the directory in
+        # clone directory
         for origin_dir in origin_dirs:
             dir_found = False
             for clone_dir in clone_dirs:
@@ -84,6 +94,8 @@ class DirectorySynchronizer:
                     self.logger.error(f"Unable to create directory {origin_dir}. {e}")
 
     def synchronize_files(self, origin_files, clone_files):
+        # checks if file from clone directory exists in source directory. If not, it removes the file from
+        # clone directory
         for filename, filehash in clone_files.items():
             orig_filehash = origin_files.get(filename)
             if filehash != orig_filehash:
@@ -91,7 +103,8 @@ class DirectorySynchronizer:
                     self.remove_file(filename)
                 except Exception as e:
                     self.logger.error(f"Unable to remove file {filename}. {e}")
-
+        # checks if file from source directory exists in clone directory. If not, it creates the file in
+        # clone directory
         for filename, filehash in origin_files.items():
             clone_filehash = clone_files.get(filename)
             if filehash != clone_filehash:
@@ -104,10 +117,13 @@ class DirectorySynchronizer:
         while True:
             origin_dirs = self.directories_to_tuple(self.source_dir)
             clone_dirs = self.directories_to_tuple(self.clone_dir)
+            self.synchronize_directories(origin_dirs, clone_dirs)
+
             origin_files = self.files_to_dictionary(self.source_dir)
             clone_files = self.files_to_dictionary(self.clone_dir)
-            self.synchronize_directories(origin_dirs, clone_dirs)
             self.synchronize_files(origin_files, clone_files)
+
             self.logger.info(f"\nDirectory {self.clone_dir} is synchronized with {self.source_dir}")
+            self.logger.info(f"\nNext synchronization will be in {interval} seconds")
             # waiting for next iteration
             time.sleep(interval)

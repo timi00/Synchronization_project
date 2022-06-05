@@ -18,13 +18,17 @@ def create_parser():
 
 def input_validation(arg1, arg2, arg3, arg4):
     if not os.path.isdir(arg1):
-        raise NotADirectoryError("{} directory does not exist!".format(arg1))
+        raise NotADirectoryError(f"{arg1} directory does not exist!")
     elif not os.path.isdir(arg2):
-        raise NotADirectoryError("{} directory does not exist!".format(arg2))
-    elif not arg3.isdigit():
+        raise NotADirectoryError(f"{arg2} directory does not exist!")
+    elif not (arg3.isdigit() or int(arg3) > 0):
         raise TypeError("{} is not a digit!".format(arg3))
     elif not os.path.isfile(arg4):
-        raise FileNotFoundError("{} file does not exist!".format(arg4))
+        try:
+            f = open(arg4, "w")
+            f.close()
+        except FileNotFoundError:
+            print(f"Path {arg4} is not valid")
 
 
 def create_logger(log_file):
@@ -45,14 +49,14 @@ def main():
     print(f"\nThe name of the program: {sys.argv[0]}")
     print(f"\nSource directory: {namespace.source}")
     print(f"\nClone directory: {namespace.clone}")
-    print(f"\nInterval: {namespace.interval} min")
+    print(f"\nInterval: {namespace.interval} seconds")
     print(f"\nFile for logging: {namespace.log}")
 
     input_validation(namespace.source, namespace.clone, namespace.interval, namespace.log)
 
     original_directory = namespace.source
     clone_directory = namespace.clone
-    sync_interval = int(namespace.interval) * 60
+    sync_interval = int(namespace.interval)
     log_file = namespace.log
 
     logger = create_logger(log_file)

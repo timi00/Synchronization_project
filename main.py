@@ -19,16 +19,19 @@ def create_parser():
 def input_validation(arg1, arg2, arg3, arg4):
     if not os.path.isdir(arg1):
         raise NotADirectoryError(f"{arg1} directory does not exist!")
-    elif not os.path.isdir(arg2):
-        raise NotADirectoryError(f"{arg2} directory does not exist!")
-    elif not (arg3.isdigit() or int(arg3) > 0):
-        raise TypeError("{} is not a digit!".format(arg3))
-    elif not os.path.isfile(arg4):
+    if not os.path.isdir(arg2):
+        try:
+            os.mkdir(arg2)
+        except OSError:
+            print(f"Path {arg2} is not valid!")
+    if not (arg3.isdigit() or int(arg3) > 0):
+        raise TypeError("{} is not a digit or is not valid!".format(arg3))
+    if not os.path.isfile(arg4):
         try:
             f = open(arg4, "w")
             f.close()
         except FileNotFoundError:
-            print(f"Path {arg4} is not valid")
+            print(f"Path {arg4} is not valid!")
 
 
 def create_logger(log_file):

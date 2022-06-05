@@ -31,7 +31,8 @@ class DirectorySynchronizer:
         os.remove(full_path)
         self.logger.info(f"File {full_path} was deleted")
 
-    def file_to_hash_sha256(self, filename):
+    @staticmethod
+    def file_to_hash_sha256(filename):
         sha256_hash = hashlib.sha256()
         with open(filename, "rb") as f:
             # Read and update hash string value in blocks of 4K
@@ -39,7 +40,8 @@ class DirectorySynchronizer:
                 sha256_hash.update(byte_block)
         return sha256_hash.hexdigest()
 
-    def directories_to_tuple(self, directory):
+    @staticmethod
+    def directories_to_tuple(directory):
         directories = tuple()
         for dirpath, dirnames, files in os.walk(directory):
             for dirname in dirnames:
@@ -59,21 +61,21 @@ class DirectorySynchronizer:
         return file_dictionary
 
     def synchronize_directories(self, origin_dirs, clone_dirs):
-        for dir in clone_dirs:
+        for clone_dir in clone_dirs:
             dir_found = False
             for origin_dir in origin_dirs:
-                if dir == origin_dir:
+                if clone_dir == origin_dir:
                     dir_found = True
             if not dir_found:
                 try:
-                    self.remove_dir(dir)
+                    self.remove_dir(clone_dir)
                 except Exception as e:
-                    self.logger.error(f"Unable to remove directory {dir}. {e}")
+                    self.logger.error(f"Unable to remove directory {clone_dir}. {e}")
 
         for origin_dir in origin_dirs:
             dir_found = False
-            for dir in clone_dirs:
-                if dir == origin_dir:
+            for clone_dir in clone_dirs:
+                if clone_dir == origin_dir:
                     dir_found = True
             if not dir_found:
                 try:

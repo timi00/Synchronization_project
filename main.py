@@ -28,9 +28,9 @@ def input_validation(arg1, arg2, arg3, arg4):
 
 
 def create_logger(log_file):
-    Log_Format = "%(levelname)s %(asctime)s - %(message)s"
+    log_format = "%(levelname)s %(asctime)s - %(message)s"
 
-    logging.basicConfig(format=Log_Format,
+    logging.basicConfig(format=log_format,
                         level=logging.INFO,
                         handlers=[logging.FileHandler(log_file),
                                   logging.StreamHandler()])
@@ -63,10 +63,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-            
-
-
